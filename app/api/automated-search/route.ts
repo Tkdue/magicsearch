@@ -33,22 +33,48 @@ export async function POST(request: NextRequest) {
 
     // Step 1: AI Analysis e Query Expansion
     console.log('🤖 Step 1: AI Analysis...');
-    const aiResponse = await fetch(`${request.nextUrl.origin}/api/ai/openai`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: tema,
-        type: 'creative'
-      })
-    });
+    let expandedQueries = [tema]; // fallback principale
+    
+    try {
+      const aiResponse = await fetch(`${request.nextUrl.origin}/api/ai/openai`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: tema,
+          type: 'creative'
+        })
+      });
 
-    let expandedQueries = [tema]; // fallback
-    if (aiResponse.ok) {
-      const aiData = await aiResponse.json();
-      expandedQueries = aiData.expanded_query.split(',').map((q: string) => q.trim());
+      if (aiResponse.ok) {
+        const aiData = await aiResponse.json();
+        if (aiData.expanded_query) {
+          expandedQueries = aiData.expanded_query.split(',').map((q: string) => q.trim()).filter((q: string) => q.length > 0);
+          console.log('✅ AI expansion successful');
+        }
+      } else {
+        console.warn('⚠️ AI expansion failed, using original query');
+      }
+    } catch (error) {
+      console.error('❌ AI expansion error:', error);
+      // Fallback: creiamo variazioni manuali del tema
+      const keywords = tema.toLowerCase().split(' ');
+      if (keywords.length > 1) {
+        expandedQueries = [
+          tema,
+          keywords[0],
+          keywords.slice(0, 2).join(' '),
+          `${tema} photography`,
+          `${tema} images`
+        ].slice(0, 4);
+      }
     }
 
-    console.log('📝 Expanded queries:', expandedQueries);
+    // Assicuriamoci di avere almeno la query originale
+    if (expandedQueries.length === 0 || !expandedQueries.some(q => q.length > 0)) {
+      expandedQueries = [tema];
+    }
+
+    console.log('📝 Final queries:', expandedQueries);
 
     // Step 2: Multi-API Search parallelo
     console.log('🔍 Step 2: Multi-API Search...');
