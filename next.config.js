@@ -3,6 +3,9 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   
+  // Configurazione per Vercel deployment
+  output: 'standalone',
+  
   // Ottimizzazioni per le immagini esterne
   images: {
     remotePatterns: [
@@ -20,7 +23,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'picsum.photos', // per placeholder durante sviluppo
+        hostname: 'picsum.photos',
       },
     ],
   },
@@ -48,14 +51,19 @@ const nextConfig = {
     ];
   },
   
+  // Redirects per gestire le route
+  async redirects() {
+    return [];
+  },
+  
+  // Rewrites per API
+  async rewrites() {
+    return [];
+  },
+  
   // Variabili ambiente esposte al frontend
   env: {
     CUSTOM_KEY: 'magic-search-v1',
-  },
-  
-  // Ottimizzazioni performance
-  experimental: {
-    optimizeCss: true,
   },
   
   // Configurazione TypeScript
@@ -67,6 +75,11 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  
+  // Configurazione per il build
+  trailingSlash: false,
+  
+  // Configurazione experimental rimossa per compatibilità
 };
 
 module.exports = nextConfig; 
