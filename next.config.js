@@ -3,8 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   
-  // Configurazione per Vercel deployment
-  output: 'standalone',
   
   // Ottimizzazioni per le immagini esterne
   images: {
