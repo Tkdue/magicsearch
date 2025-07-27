@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { google } from 'googleapis';
 
 const GDRIVE_FOLDER_ID = '14qaRq7oTpdo4i6wIci_HAiv8ZL0Xd6UO';
