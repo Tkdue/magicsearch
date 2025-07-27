@@ -55,17 +55,40 @@ export async function POST(request: NextRequest) {
     const searchPromises = [];
     const providers = ['google', 'unsplash', 'pixabay', 'pexels'];
     
-    // Distribuiamo le query tra i provider
+    // Distribuiamo le query tra i provider con parametri corretti
     for (let i = 0; i < Math.min(expandedQueries.length, 4); i++) {
       const query = expandedQueries[i];
       const provider = providers[i % providers.length];
       
+      let searchUrl = '';
+      switch (provider) {
+        case 'google':
+          searchUrl = `${request.nextUrl.origin}/api/search/google?q=${encodeURIComponent(query)}&num=5`;
+          break;
+        case 'unsplash':
+          searchUrl = `${request.nextUrl.origin}/api/search/unsplash?query=${encodeURIComponent(query)}&per_page=5`;
+          break;
+        case 'pixabay':
+          searchUrl = `${request.nextUrl.origin}/api/search/pixabay?q=${encodeURIComponent(query)}&per_page=5`;
+          break;
+        case 'pexels':
+          searchUrl = `${request.nextUrl.origin}/api/search/pexels?query=${encodeURIComponent(query)}&per_page=5`;
+          break;
+        default:
+          searchUrl = `${request.nextUrl.origin}/api/search/${provider}?q=${encodeURIComponent(query)}`;
+      }
+      
       searchPromises.push(
-        fetch(`${request.nextUrl.origin}/api/search/${provider}?q=${encodeURIComponent(query)}`, {
+        fetch(searchUrl, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
-        }).then(res => res.ok ? res.json() : { results: [] })
-          .catch(() => ({ results: [] }))
+        }).then(res => {
+          console.log(`${provider} search response status:`, res.status);
+          return res.ok ? res.json() : { results: [], error: `HTTP ${res.status}` };
+        }).catch(error => {
+          console.error(`${provider} search error:`, error);
+          return { results: [], error: error.message };
+        })
       );
     }
 
@@ -76,17 +99,93 @@ export async function POST(request: NextRequest) {
     let allResults: SearchResult[] = [];
     
     searchResults.forEach((result, index) => {
-      if (result.results && Array.isArray(result.results)) {
-        const providerResults = result.results.map((item: any, idx: number) => ({
-          id: `${providers[index % providers.length]}-${index}-${idx}`,
-          title: item.title || item.alt_description || `Image ${idx + 1}`,
-          url: item.webformatURL || item.urls?.regular || item.src?.large || item.link,
-          thumbnail: item.webformatURL || item.urls?.small || item.src?.medium || item.link,
-          source: providers[index % providers.length],
-          width: item.imageWidth || item.width,
-          height: item.imageHeight || item.height,
-          description: item.tags || item.description || ''
-        }));
+      const provider = providers[index % providers.length];
+      console.log(`Processing ${provider} results:`, result);
+      
+      let items = [];
+      
+      // Strutture dati diverse per ogni provider
+      switch (provider) {
+        case 'google':
+          items = result.items || [];
+          break;
+        case 'unsplash':
+          items = result.results || [];
+          break;
+        case 'pixabay':
+          items = result.hits || [];
+          break;
+        case 'pexels':
+          items = result.photos || [];
+          break;
+        default:
+          items = result.results || [];
+      }
+      
+      if (Array.isArray(items)) {
+        const providerResults = items.map((item: any, idx: number) => {
+          let imageData = {
+            id: `${provider}-${index}-${idx}`,
+            title: '',
+            url: '',
+            thumbnail: '',
+            source: provider,
+            width: 0,
+            height: 0,
+            description: ''
+          };
+          
+          // Mapping specifico per provider
+          switch (provider) {
+            case 'google':
+              imageData = {
+                ...imageData,
+                title: item.title || `Google Image ${idx + 1}`,
+                url: item.link || '',
+                thumbnail: item.image?.thumbnailLink || item.link || '',
+                width: item.image?.width || 0,
+                height: item.image?.height || 0,
+                description: item.snippet || ''
+              };
+              break;
+            case 'unsplash':
+              imageData = {
+                ...imageData,
+                title: item.alt_description || item.description || `Unsplash Image ${idx + 1}`,
+                url: item.urls?.regular || item.urls?.full || '',
+                thumbnail: item.urls?.small || item.urls?.thumb || '',
+                width: item.width || 0,
+                height: item.height || 0,
+                description: item.description || item.alt_description || ''
+              };
+              break;
+            case 'pixabay':
+              imageData = {
+                ...imageData,
+                title: item.tags || `Pixabay Image ${idx + 1}`,
+                url: item.webformatURL || item.largeImageURL || '',
+                thumbnail: item.previewURL || item.webformatURL || '',
+                width: item.imageWidth || 0,
+                height: item.imageHeight || 0,
+                description: item.tags || ''
+              };
+              break;
+            case 'pexels':
+              imageData = {
+                ...imageData,
+                title: item.alt || `Pexels Image ${idx + 1}`,
+                url: item.src?.large || item.src?.original || '',
+                thumbnail: item.src?.medium || item.src?.small || '',
+                width: item.width || 0,
+                height: item.height || 0,
+                description: item.alt || ''
+              };
+              break;
+          }
+          
+          return imageData;
+        }).filter(item => item.url && item.thumbnail); // Solo immagini con URL validi
+        
         allResults = [...allResults, ...providerResults];
       }
     });

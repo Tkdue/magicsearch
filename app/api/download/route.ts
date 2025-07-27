@@ -1,30 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import { writeFile, mkdir } from 'fs/promises';
 
 export async function POST(request: NextRequest) {
   try {
-    const { imageUrl, fileName, downloadPath } = await request.json();
+    const { imageUrl, fileName } = await request.json();
 
     if (!imageUrl || !fileName) {
       return NextResponse.json({ error: 'Image URL and filename are required' }, { status: 400 });
-    }
-
-    // Gestisci percorsi assoluti e relativi
-    let basePath: string;
-    if (downloadPath && path.isAbsolute(downloadPath)) {
-      basePath = downloadPath;
-    } else {
-      basePath = path.join(process.cwd(), downloadPath || 'downloads/magic-search');
-    }
-    
-    // Assicuriamoci che la directory esista
-    try {
-      await mkdir(basePath, { recursive: true });
-      console.log(`Directory created/verified: ${basePath}`);
-    } catch (error) {
-      console.log('Directory creation error:', error);
     }
 
     // Download dell'immagine
@@ -46,19 +27,18 @@ export async function POST(request: NextRequest) {
     const safeFileName = fileName.replace(/[^a-z0-9.-]/gi, '_');
     const timestamp = Date.now();
     const finalFileName = `${timestamp}_${safeFileName}`;
-    const filePath = path.join(basePath, finalFileName);
 
-    // Salva il file
-    await writeFile(filePath, buffer);
-    console.log(`File saved successfully: ${filePath}`);
+    // Determina il content type
+    const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
 
-    return NextResponse.json({ 
-      success: true, 
-      filePath: filePath,
-      fileName: finalFileName,
-      directory: basePath,
-      size: buffer.length,
-      message: 'Image downloaded successfully' 
+    // Restituisci l'immagine come blob per download diretto dal browser
+    return new NextResponse(buffer, {
+      status: 200,
+      headers: {
+        'Content-Type': contentType,
+        'Content-Disposition': `attachment; filename="${finalFileName}"`,
+        'Content-Length': buffer.length.toString(),
+      },
     });
 
   } catch (error) {
