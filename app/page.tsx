@@ -1,8 +1,9 @@
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 
-export const runtime = 'edge'
+// Disabilita il prerendering per questa pagina
+export const dynamic = 'force-dynamic'
 
-const DynamicHomePage = dynamic(() => import('../components/HomePage'), {
+const DynamicHomePage = dynamicImport(() => import('../components/HomePage'), {
   ssr: false,
   loading: () => <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
