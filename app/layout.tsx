@@ -7,13 +7,19 @@ export const metadata: Metadata = {
   description: 'AI-powered intelligent image search with 6 integrated APIs: Google, Unsplash, Pixabay, Pexels, Freepik, Envato',
   keywords: ['image search', 'AI', 'creative tools', 'Ar1films', 'stock photos', 'premium graphics'],
   authors: [{ name: 'Ar1films' }],
-  viewport: 'width=device-width, initial-scale=1',
-  themeColor: '#8B5CF6',
   icons: {
     icon: '/Magic_search_icon.png',
     shortcut: '/Magic_search_icon.png',
     apple: '/Magic_search_icon.png',
   },
+}
+
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    themeColor: '#8B5CF6',
+  }
 }
 
 export default function RootLayout({
@@ -23,9 +29,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="it">
-      <head>
-        <meta name="theme-color" content="#8B5CF6" />
-      </head>
       <body className="antialiased">
         {children}
       </body>

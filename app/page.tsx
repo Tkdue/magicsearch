@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
+
+export const dynamic = 'force-dynamic'
 import MagicSearch from '../magic-search-app'
 import AutomatedSearchForm from '../components/AutomatedSearchForm'
 import { Bot, Search } from 'lucide-react'
