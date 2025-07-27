@@ -1,20 +1,15 @@
 {
   "version": 2,
+  "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "framework": "nextjs",
+  "regions": ["fra1"],
   "functions": {
     "app/api/**/*.ts": {
       "runtime": "nodejs18.x"
     }
   },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
@@ -24,7 +19,7 @@
           "value": "*"
         },
         {
-          "key": "Access-Control-Allow-Methods",
+          "key": "Access-Control-Allow-Methods", 
           "value": "GET, POST, PUT, DELETE, OPTIONS"
         },
         {
