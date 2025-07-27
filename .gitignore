@@ -61,6 +61,10 @@ Thumbs.db
 # Downloads folder (contiene i file scaricati)
 downloads/
 
+# Credentials and sensitive files
+docs/credentials.json
+docs/deployment-info-sensitive.md
+
 # Temporary files
 *.tmp
 *.temp 

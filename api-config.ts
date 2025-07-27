@@ -6,15 +6,22 @@ export const API_CONFIG = {
   OPENAI: {
     API_KEY: process.env.OPENAI_API_KEY || '',
     BASE_URL: 'https://api.openai.com/v1',
-    MODEL: 'gpt-4-turbo-preview',
-    MAX_TOKENS: 1000,
+    MODEL: 'gpt-4o',
+    MAX_TOKENS: 300,
+  },
+  
+  GEMINI: {
+    API_KEY: process.env.GEMINI_API_KEY || '',
+    BASE_URL: 'https://generativelanguage.googleapis.com/v1beta',
+    MODEL: 'gemini-1.5-pro',
+    MAX_TOKENS: 300,
   },
   
   ANTHROPIC: {
     API_KEY: process.env.ANTHROPIC_API_KEY || '',
     BASE_URL: 'https://api.anthropic.com/v1',
-    MODEL: 'claude-3-haiku-20240307',
-    MAX_TOKENS: 1000,
+    MODEL: 'claude-3-5-sonnet-20241022',
+    MAX_TOKENS: 300,
   },
 
   // Image Search APIs
